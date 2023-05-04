@@ -6,7 +6,7 @@ const controller = {}
 controller.allBooks =  async (req, res) => {
     try {
         const allBooks = await BookModel.find()
-
+console.log(allBooks);
         res.status(200).send(allBooks)
     } catch (err) {
         res.status(500).send ({error: 'Error al leer la base de datos'})
@@ -25,7 +25,7 @@ controller.bookById = async (req, res) => {
 }
 
 controller.createBook = async (req, res) => {
-    const {name, author, pages, yearPublished, isbn, language,sinopsis} = req.body
+    const {name, author, pages, yearPublished, isbn, language,sinopsis,image} = req.body
     const newBook = new BookModel({
         _id: v4(),
         name,
@@ -34,7 +34,8 @@ controller.createBook = async (req, res) => {
         yearPublished, 
         isbn, 
         language, 
-        sinopsis
+        sinopsis,
+        image
     })
 
     await newBook.save()
@@ -42,20 +43,26 @@ controller.createBook = async (req, res) => {
     res.send('Book registered')
 }
 
-controller.deleteBook = (req, res) => {
+controller.deleteBook = async (req, res) => {
+    const book = await BookModel.findByIdAndDelete(req.params.id)
 
+    if(!book){
+        return res.status(409).send('Book does not exist')
+    }
+
+    res.send('Book removed')
 }
 
 controller.patchBook = async (req, res) => {
     const book = await BookModel.findById(req.params.id)
 
     if(!book){
-        return res.status(409).send('User does not exist')
+        return res.status(409).send('Book does not exist')
     }
 
     await BookModel.updateOne({_id: req.params.id}, {$set: {yearPublished: 1999}})
 
-    res.send('User updated')
+    res.send('Book updated')
 }
 
 

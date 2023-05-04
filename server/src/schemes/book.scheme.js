@@ -8,7 +8,8 @@ const BookScheme = mongoose.Schema({
     yearPublished: Number,
     isbn: Number,
     language: String,
-    sinopsis: String
+    sinopsis: String,
+    image: String
 })
 
 const BookModel = mongoose.model('books', BookScheme)
