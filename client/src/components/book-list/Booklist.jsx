@@ -1,45 +1,77 @@
-import { useEffect, useState } from 'react';
 import {
 	StyledBookCard,
 	StyledForm,
 	StyledSearch,
-	StyledBookList
+	StyledBookList,
+	StyledDiv,
+	StyledTitle,
+	StyledButtons,
+	StyledMain
 } from './styles';
+import { useFetch } from '../../hooks/useFetch';
+import { useState } from 'react';
+import Modal from '../modal/Modal';
+import BookDescription from '../book-description/BookDescription';
 
 const BookList = () => {
-	const [books, setBooks] = useState([]);
+	const [contentModal, setContentModal] = useState(null);
+	const { data, loading, error, setFetchInfo } = useFetch({
+		url: 'http://localhost:3000/api/books/'
+	});
 
-	useEffect(() => {
-		getAllBooks(setBooks);
-	}, []);
+	if (loading) return <h2>loading...</h2>;
 
-	if (books.length === 0) return <h1>No hay resultados</h1>;
+	if (error) return <h2>Something went wrong...</h2>;
+
 	return (
-		<main>
+		<StyledMain>
 			<StyledForm>
 				<StyledSearch type='text' placeholder='Buscar libro' />
 			</StyledForm>
+			<button>Subir Libro</button>
 			<StyledBookList>
-				{books.map(book => (
+				{data.map(book => (
 					<StyledBookCard key={book._id}>
-						<div>
-							<h2>{book.name}</h2>
-							<h3>{book.author}</h3>
-						</div>
+						<StyledDiv>
+							<StyledTitle>{book.name}</StyledTitle>
+							<p>{book.author}</p>
+						</StyledDiv>
 						<img src={book.image} alt={book.name} />
-						<button>Más información</button>
-						<button>Borrar</button>
+						<StyledButtons>
+							<button
+								onClick={() =>
+									setContentModal(
+										<BookDescription
+											book={book}
+											setContentModal={setContentModal}
+										/>
+									)
+								}
+							>
+								Más información
+							</button>
+							<button onClick={() => deleteUser(setFetchInfo, book._id)}>
+								Borrar
+							</button>
+						</StyledButtons>
 					</StyledBookCard>
 				))}
 			</StyledBookList>
-		</main>
+			<Modal setContentModal={setContentModal}>{contentModal}</Modal>
+		</StyledMain>
 	);
 };
 
-const getAllBooks = async setBooks => {
-	const response = await fetch('http://localhost:3000/api/books/');
-	const data = await response.json();
-	setBooks(data);
+const deleteUser = async (setFetchInfo, id) => {
+	setFetchInfo({
+		url: `http://localhost:3000/api/books/${id}`,
+		options: {
+			method: 'DELETE',
+			headers: {
+				Accept: 'application/json'
+			}
+		}
+	});
 };
 
 export default BookList;
